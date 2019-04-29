@@ -6,28 +6,31 @@ from sklearn.metrics import classification_report
 from time import time
 from scipy import signal
 from sklearn.svm import SVC
+import matplotlib.pyplot as plt
 
 
 def distance(x, y, z):
     return pow(x*x + y*y + z*z, 0.5)
+
+
 def get_data(file_name, window_len, step):
     data, all_datas = [], []
     with open(file_name, 'r') as file:
         all_lines = file.readlines()
         for idx, line in enumerate(all_lines, 1):
             _, x, y, z = [float(i) for i in line.split()]
-            data.append([x, y, z, distance(x, y, z)])
-            # data.append([x, y, z])
+            # data.append([x, y, z, distance(x, y, z)])
+            data.append([x, y, z])
             '''
             if idx % window_len == 0:
                 all_datas.append(data)
                 data = []
             '''
     # print(data[:10])
-    b, a = signal.butter(8, 0.2, 'lowpass')
-    filted_data = signal.filtfilt(b, a, data, axis=0)
+    #b, a = signal.butter(8, 0.2, 'lowpass')
+    #filted_data = signal.filtfilt(b, a, data, axis=0)
 
-    # filted_data = data
+    filted_data = data
     # print(filted_data[:10])
     ''''
     filted_data_1 = signal.filtfilt(b, a, data, axis=1)
@@ -85,8 +88,8 @@ def split_to_train_test(x_all_data, y_all_data, size=0.8):
 def svm_demo(all_data):
     x_train, x_test, y_train, y_test = all_data
 
-    x_train = x_train.reshape((-1, 50 * 8))
-    x_test = x_test.reshape((-1, 50 * 8))
+    x_train = x_train.reshape((-1, 50 * 6))
+    x_test = x_test.reshape((-1, 50 * 6))
     y_train = y_train.reshape(-1)
     y_test = y_test.reshape(-1)
 
@@ -103,8 +106,8 @@ def svm_demo(all_data):
 def knn_demo(all_data):
     x_train, x_test, y_train, y_test = all_data
 
-    x_train = x_train.reshape((-1, 50 * 8))
-    x_test = x_test.reshape((-1, 50 * 8))
+    x_train = x_train.reshape((-1, 50 * 6))
+    x_test = x_test.reshape((-1, 50 * 6))
     y_train = y_train.reshape(-1)
     y_test = y_test.reshape(-1)
     print("Train a KNN classification model NO PCA")
@@ -123,8 +126,8 @@ def pca_knn_demo(all_data):
     print(x_train.shape)
     print(x_test.shape)
 
-    x_train = x_train.reshape((-1, 50 * 8))
-    x_test = x_test.reshape((-1, 50 * 8))
+    x_train = x_train.reshape((-1, 50 * 6))
+    x_test = x_test.reshape((-1, 50 * 6))
     y_train = y_train.reshape(-1)
     y_test = y_test.reshape(-1)
     print(y_train.shape)
@@ -159,7 +162,16 @@ if __name__ == "__main__":
     # print(len(data))
     # a = np.array(data)
     x_acc_all_data, y_all_data = get_all_datas('./data', window_len=50)
-    #print(len(x_all_data), len(x_all_data[0]))
+    # fig, ax = plt.subplots(nrows=2, ncols=1)
+    x1, x2 = [], []
+    for i in range(20):
+        for j, k in zip(x_acc_all_data[0][i], x_acc_all_data[1][i]):
+            x1.append(j[0])
+            x2.append(k[0])
+    plt.plot(x1)
+    plt.plot(x2)
+    plt.show()
+
     x_gyr_all_data, y_all_data = get_all_datas('./data', window_len=50, file_type='gyr')
     x_all_data = combine_data(x_acc_all_data, x_gyr_all_data)
     # print(x_all_data[0][0]
