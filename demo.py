@@ -22,7 +22,7 @@ def get_data(file_name, window_len, step):
             # data.append([x, y, z, distance(x, y, z)])
             data.append([x, y, z])
             '''
-            if idx % window_len == 0:
+            if idx % window_len == 0: 
                 all_datas.append(data)
                 data = []
             '''
@@ -32,7 +32,7 @@ def get_data(file_name, window_len, step):
 
     filted_data = data
     # print(filted_data[:10])
-    ''''
+    '''
     filted_data_1 = signal.filtfilt(b, a, data, axis=1)
     filted_data_2 = signal.filtfilt(b, a, data, axis=2)
     filted_data = [[data_0, data_1, data_2] for data_0, data_1, data_2 in
@@ -48,7 +48,7 @@ def get_data(file_name, window_len, step):
     '''
 
 
-def get_all_datas(dir_path, window_len, file_type='acc'):
+def get_all_datas(dir_path, window_len, step=30, file_type='acc'):
     x_all_data, y_all_data = [], []
     file_name_list = os.listdir(dir_path)
     sorted(file_name_list)
@@ -58,7 +58,7 @@ def get_all_datas(dir_path, window_len, file_type='acc'):
         else:
             label = idx
         if file_name.startswith(file_type):
-            data = get_data(os.path.join(dir_path, file_name), window_len, step=30)
+            data = get_data(os.path.join(dir_path, file_name), window_len, step=step)
             x_all_data.append(data)
             y_all_data.append([label for _ in range(len(data))])
     return x_all_data, y_all_data
@@ -162,17 +162,46 @@ if __name__ == "__main__":
     # print(len(data))
     # a = np.array(data)
     x_acc_all_data, y_all_data = get_all_datas('./data', window_len=50)
-    # fig, ax = plt.subplots(nrows=2, ncols=1)
-    x1, x2 = [], []
-    for i in range(20):
-        for j, k in zip(x_acc_all_data[0][i], x_acc_all_data[1][i]):
+    fig, ax = plt.subplots(nrows=2, ncols=1)
+    x1, x2, x3 = [], [], []
+    y1, y2, y3 = [], [], []
+    for i in range(30):
+        for j, k, l in zip(x_acc_all_data[0][i], x_acc_all_data[1][i], x_acc_all_data[2][i]):
             x1.append(j[0])
             x2.append(k[0])
-    plt.plot(x1)
-    plt.plot(x2)
+            x3.append(l[0])
+            y1.append(j[1])
+            y2.append(k[1])
+            y3.append(l[1])
+    ax[0].plot(x1, c='r')
+    ax[0].plot(x2, c='g')
+    ax[0].plot(x3)
+    ax[1].plot(y1, c='r')
+    ax[1].plot(y2, c='g')
+    ax[1].plot(y3)
+    plt.title('8-0.3')
     plt.show()
 
     x_gyr_all_data, y_all_data = get_all_datas('./data', window_len=50, file_type='gyr')
+    fig, ax = plt.subplots(nrows=2, ncols=1)
+    x1, x2, x3 = [], [], []
+    y1, y2, y3 = [], [], []
+    for i in range(30):
+        for j, k, l in zip(x_gyr_all_data[0][i], x_gyr_all_data[1][i], x_gyr_all_data[2][i]):
+            x1.append(j[0])
+            x2.append(k[0])
+            x3.append(l[0])
+            y1.append(j[1])
+            y2.append(k[1])
+            y3.append(l[1])
+    ax[0].plot(x1, c='r')
+    ax[0].plot(x2, c='g')
+    ax[0].plot(x3)
+    ax[1].plot(y1, c='r')
+    ax[1].plot(y2, c='g')
+    ax[1].plot(y3)
+    plt.title('gyr-8-0.3')
+    plt.show()
     x_all_data = combine_data(x_acc_all_data, x_gyr_all_data)
     # print(x_all_data[0][0]
     all = split_to_train_test(x_all_data, y_all_data)

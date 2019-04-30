@@ -1,14 +1,10 @@
 import os
-import sys
 import tensorflow as tf
-from cnn_demo import CNNConfig, CNN
-from data_process import get_batch, get_train_valid_test_data
+from argparse import ArgumentParser
 
-
-save_dir = './checkpoints'
-save_path = os.path.join(save_dir, 'best_validation')
-
-x_train, x_val, x_test, y_train, y_val, y_test = get_train_valid_test_data()
+from model.rnn_model import RNNConfig, RNN
+from model.cnn_model import CNNConfig, CNN
+from util.data_process import get_batch, get_train_valid_test_data
 
 
 def feed_data(x_batch, y_batch, keep_prob):
@@ -32,14 +28,13 @@ def evaluate(sess, x_, y_):
         loss, acc = sess.run([model.loss, model.acc], feed_dict=feed_dict)
         total_loss += loss * batch_len
         total_acc += acc * batch_len
-
     return total_loss / data_len, total_acc / data_len
 
 
 def train():
     saver = tf.train.Saver()
-    if not os.path.exists(save_dir):
-        os.mkdir(save_dir)
+    if not os.path.exists(save_subdir):
+        os.makedirs(save_subdir)
 
     sess = tf.Session()
     sess.run(tf.global_variables_initializer())
@@ -87,12 +82,10 @@ def train():
 
 
 def test():
-    print()
     sess = tf.Session()
     sess.run(tf.global_variables_initializer())
     saver = tf.train.Saver()
     saver.restore(sess=sess, save_path=save_path)
-
     print('Testing...')
     loss_test, acc_test = evaluate(sess, x_test, y_test)
     msg = 'Test Loss: {0:>6.2}, Test Acc: {1:>7.2%}'
@@ -100,11 +93,27 @@ def test():
 
 
 if __name__ == "__main__":
-    if len(sys.argv) not in [2, 3] or sys.argv[1] not in ['train', 'test']:
-        raise ValueError("""usage: python *.py [train / test]""")
-    config = CNNConfig()
-    model = CNN(config)
-    if sys.argv[1] == 'train':
+    x_train, x_val, x_test, y_train, y_val, y_test = get_train_valid_test_data()
+    parser = ArgumentParser()
+    parser.add_argument("--model", choices=["cnn", "rnn"], default="cnn", help="which model to use.")
+    parser.add_argument("--state", choices=["train", "test", "both"], default="both", help="model state.")
+    args = parser.parse_args()
+    if args.model == "cnn":
+        config = CNNConfig()
+        model = CNN(config)
+        model_name = "cnn"
+    else:
+        config = RNNConfig()
+        model = RNN(config)
+        model_name = "rnn"
+    save_dir = './checkpoints'
+    save_subdir = os.path.join(save_dir, model_name)
+    save_path = os.path.join(save_dir, model_name, 'best_validation')
+    if args.state in ["train", "both"]:
         train()
-    if (len(sys.argv) == 3 and sys.argv[2] == 'test') or sys.argv[1] == 'test':
+        if args.state == "both":
+            test()
+    else:
         test()
+    print(args.model, args.state)
+
