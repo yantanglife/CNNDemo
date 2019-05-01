@@ -1,10 +1,8 @@
-import os
 import numpy as np
 from sklearn.decomposition import PCA
 from sklearn.neighbors import KNeighborsClassifier
-from sklearn.metrics import classification_report
+# from sklearn.metrics import classification_report
 from time import time
-from scipy import signal
 from sklearn.svm import SVC
 import matplotlib.pyplot as plt
 
