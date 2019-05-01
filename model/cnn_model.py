@@ -2,32 +2,33 @@ import tensorflow as tf
 
 
 class CNNConfig(object):
+    """CNN参数"""
     # input_data.shape = [seq_length, input_dim]
     input_dim = 6
-    # input_chanel = 2
     seq_length = 100
 
-    num_filters = [32, 64, 128]
-    hidden_dim = 128
-    num_classes = 10
-    kernel_size = 5
-
-    print_per_batch = 10
+    num_filters = [32, 64, 128]   # 卷积核数目
+    hidden_dim = 128              # 全连接层神经元
+    num_classes = 10              # 类别
+    kernel_size = 5               # 卷积核大小
 
     dropout_keep_prob = 0.5
     learning_rate = 1e-3
 
     batch_size = 128
     num_epochs = 20
+    print_per_batch = 10          # 每多少轮输出一次结果
 
 
 class CNN(object):
+    """CNN model"""
     def __init__(self, config):
         self.config = config
+        # input_x, input_y, keep_prob
         self.input_x = tf.placeholder(tf.float32,
                                       [None, self.config.seq_length, self.config.input_dim],
                                       name='input_x')
-        self.   input_y = tf.placeholder(tf.float32, [None, self.config.num_classes], name='input_y')
+        self.input_y = tf.placeholder(tf.float32, [None, self.config.num_classes], name='input_y')
         self.keep_prob = tf.placeholder(tf.float32, name='keep_prob')
 
         self.cnn()
@@ -60,11 +61,12 @@ class CNN(object):
 
             self.logits = tf.layers.dense(fc, self.config.num_classes, name='fc2')
             self.y_pred_cls = tf.arg_max(tf.nn.softmax(self.logits), 1)
-        # print(conv1, pool1, conv2, pool2, fc, self.logits, self.y_pred_cls)
+
         with tf.name_scope('optimize'):
+            # 损失函数
             cross_entropy = tf.nn.softmax_cross_entropy_with_logits(logits=self.logits, labels=self.input_y)
             self.loss = tf.reduce_mean(cross_entropy)
-
+            # 优化器
             self.optim = tf.train.AdamOptimizer(learning_rate=self.config.learning_rate).minimize(self.loss)
         with tf.name_scope('accuracy'):
             correct_pred = tf.equal(tf.arg_max(self.input_y, 1), self.y_pred_cls)
