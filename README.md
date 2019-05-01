@@ -1,2 +1,5 @@
-# CNNDemo
-## test pycharm
+# Gait Recognition
+## demo
+PCA、KNN
+## cnn
+## rnn
