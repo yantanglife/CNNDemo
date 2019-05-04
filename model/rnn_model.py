@@ -6,9 +6,10 @@ class RNNConfig(object):
     seq_length = 100
     num_classes = 10
 
-    num_layers = 2
-    hidden_dim = 128
-    rnn = 'lstm'
+    num_layers = 1
+    hidden_dim = 64
+    # select GRU or LSTM
+    rnn = 'gru'
 
     dropout_keep_prob = 0.9
     learning_rate = 1e-3
@@ -46,19 +47,18 @@ class RNN(object):
         with tf.name_scope('rnn'):
             cells = [dropout() for _ in range(self.config.num_layers)]
             rnn_cell = tf.nn.rnn_cell.MultiRNNCell(cells)
-            _outputs, _ = tf.nn.dynamic_rnn(cell=rnn_cell, inputs=self.input_x, dtype=tf.float32)
+            outputs, _ = tf.nn.dynamic_rnn(cell=rnn_cell, inputs=self.input_x, dtype=tf.float32)
             # 取最后一个时序输出作为结果
-            last = _outputs[:, -1, :]
-        print(_outputs, last)
+            output = outputs[:, -1, :]
+
         with tf.name_scope('score'):
-            fc = tf.layers.dense(last, self.config.hidden_dim, name='fc1')
+            fc = tf.layers.dense(output, self.config.hidden_dim, name='fc1')
             fc = tf.contrib.layers.dropout(fc, self.keep_prob)
             fc = tf.nn.relu(fc)
-            print(fc)
+
             self.logits = tf.layers.dense(fc, self.config.num_classes, name='fc2')
-            print(self.logits)
             self.y_pred_cls = tf.argmax(tf.nn.softmax(self.logits), 1)
-            print(self.y_pred_cls)
+
         with tf.name_scope('optimize'):
             cross_entropy = tf.nn.softmax_cross_entropy_with_logits(logits=self.logits, labels=self.input_y)
             self.loss = tf.reduce_mean(cross_entropy)
