@@ -11,6 +11,7 @@ class CNNConfig(object):
     hidden_dim = 128              # 全连接层神经元
     num_classes = 10              # 类别
     kernel_size = 5               # 卷积核大小
+    pool_size = 3                 # 池化大小
 
     dropout_keep_prob = 0.5
     learning_rate = 1e-3
@@ -39,19 +40,19 @@ class CNN(object):
                                      padding='SAME', strides=1, activation=tf.nn.relu, name='conv1')
 
         with tf.name_scope('pooling2'):
-            pool1 = tf.layers.max_pooling1d(conv1, 3, strides=2, name='pooling1')
+            pool1 = tf.layers.max_pooling1d(conv1, self.config.pool_size, strides=2, name='pooling1')
 
         with tf.name_scope('conv2'):
             conv2 = tf.layers.conv1d(pool1, self.config.num_filters[1], self.config.kernel_size,
                                      padding='SAME', strides=1, activation=tf.nn.relu, name='conv2')
 
         with tf.name_scope('pooling2'):
-            pool2 = tf.layers.max_pooling1d(conv2, 3, strides=2, name='pooling2')
+            pool2 = tf.layers.max_pooling1d(conv2, self.config.pool_size, strides=2, name='pooling2')
         with tf.name_scope('conv3'):
             conv3 = tf.layers.conv1d(pool2, self.config.num_filters[2], self.config.kernel_size,
                                      padding='SAME', strides=1, activation=tf.nn.relu, name='conv3')
         with tf.name_scope('pooling3'):
-            pool3 = tf.layers.max_pooling1d(conv3, 3, strides=2, name='pooling3')
+            pool3 = tf.layers.max_pooling1d(conv3, self.config.pool_size, strides=2, name='pooling3')
 
         with tf.name_scope('score'):
             temp = tf.reshape(pool3, (-1, pool3.shape[1] * pool3.shape[2]))
